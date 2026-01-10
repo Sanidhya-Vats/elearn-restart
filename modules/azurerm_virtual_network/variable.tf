@@ -11,26 +11,26 @@ variable "resource_group_name" {
   type = string
 }
 variable "location" {
-  default = "West US"
+  default     = "West US"
   description = "Location of Resource Group"
-  type = string
+  type        = string
   validation {
     condition = contains([
       "East US",
       "East US 2",
-        "West US",
-        "Central India",], var.location)
-        error_message = "Invalid location use as per policy "
+      "West US",
+    "Central India", ], var.location)
+    error_message = "Invalid location use as per policy "
   }
 
 }
 variable "tags" {
   description = "Tags to be applied to the Resource Group"
   type        = map(string)
-  default     = {
+  default = {
     environment = "Development"
   }
- validation {
+  validation {
     condition = (
       length(var.tags) <= 10 &&
       contains(keys(var.tags), "environment") &&
@@ -40,7 +40,7 @@ variable "tags" {
   }
 }
 variable "virtual_network_name" {
-  type = string
+  type        = string
   description = "Name of the Virtual Network"
   validation {
     condition = (
@@ -52,7 +52,28 @@ variable "virtual_network_name" {
   default = "abc-app-prod-vnet"
 }
 variable "address_space" {
-  type = list(string)
+  type        = list(string)
   description = "The address space that is used by the virtual network."
-  default = ["10.0.0.0/16"]
-  }
+  default     = ["10.0.0.0/16"]
+}
+
+
+variable "subnets" {
+  description = "Map of subnets configuration"
+  type = map(object({
+    name                                          = string
+    address_prefixes                              = list(string)
+    security_group_id                             = optional(string)
+    network_security_group_name                   = optional(string,null)
+    private_endpoint_network_policies             = optional(string, "Disabled")
+    private_link_service_network_policies_enabled = optional(bool, false)
+
+    delegation_name = optional(string)
+    delegation = optional(object({
+      name    = string
+      actions = list(string)
+    }))
+  }))
+  
+  default = {}
+}
