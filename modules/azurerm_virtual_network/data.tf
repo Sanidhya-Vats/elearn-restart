@@ -1,6 +1,11 @@
 data "azurerm_network_security_group" "nsg" {
-for_each = var.subnets
-  name = each.value.network_security_group_name
-  resource_group_name = var.resource_group_name==null ? azurerm_resource_group.rg[0].name : var.resource_group_name
-}
+  // Create a NSG data source only for subnets that have network_security_group_name defined
+  for_each = {
+    for k, v in var.subnets :
+    k => v
+    if try(v.network_security_group_name, null) != null
+  }
 
+  name                = each.value.network_security_group_name
+  resource_group_name = var.resource_group_name
+}

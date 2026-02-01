@@ -77,3 +77,16 @@ variable "subnets" {
   
   default = {}
 }
+
+variable "delegation" {
+  description = "Delegation configuration for subnets"
+  type = object({
+    delegation_name    = string
+    delegation= object({
+      name    = string
+      actions = list(string)
+    })
+    
+  })
+  default = null 
+}
