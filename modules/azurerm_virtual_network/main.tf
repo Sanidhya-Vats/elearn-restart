@@ -16,15 +16,21 @@ resource "azurerm_virtual_network" "vnet" {
     content {
       name = subnet.value.name
       address_prefixes = subnet.value.address_prefixes
-      security_group = subnet.value.security_group_id==null ? data.azurerm_network_security_group.nsg[subnet.key].id : subnet.value.security_group_id
+      // Associate NSG if defined in subnet variable or fetched from data source
+      security_group = try(subnet.value.security_group_id, data.azurerm_network_security_group.nsg[subnet.key].id, null)
       private_endpoint_network_policies = subnet.value.private_endpoint_network_policies
       private_link_service_network_policies_enabled =subnet.value.private_link_service_network_policies_enabled
-      delegation {
-        name = subnet.value.delegation_name
+      
+      dynamic "delegation" {
+        for_each = subnet.value.delegation != null ? [subnet.value.delegation] : []
+        content {
+          
+        name = delegation.value.delegation_name
         service_delegation {
           name = subnet.value.delegation.name
           actions = subnet.value.delegation.actions
         }
+      }
       }
     }
     
